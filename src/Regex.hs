@@ -8,6 +8,7 @@ module Regex
 import Datatypes
 import qualified DFA (fromNFAMulti, flattenToDFA, fromNFA)
 import qualified NFA (epsilonClosure, fromRegex)
+import Debug.Trace (trace)
 
 import qualified DMap
 import qualified Parser as P
@@ -40,7 +41,6 @@ check dfa@(DFA start accepts ts) = go start
                 proceedWithChar c = case Map.lookup c $ DMap.lookup current ts of
                     Nothing        -> False
                     Just nextState -> go nextState cs
- 
 
 type TraversalTrace =
     ( Bool             -- * flag when in accepting state
@@ -59,6 +59,7 @@ checkWithTrace dfa@(DFA start accepts ts) input =
             -- The current state verifies the input, thus set the FoundFlag to True
             -- to avoid adding further trace
             S.modify (\(_, trace) -> if isAccepting then (True,(current,True):trace) else (False,trace))
+            trace ("Accept states: " ++ show accepts) (return ())
             return isAccepting
         go current (c:cs) = do
             let literalsForCurrent = Map.keys $ DMap.lookup current ts
@@ -73,6 +74,7 @@ checkWithTrace dfa@(DFA start accepts ts) input =
                     Nothing        -> do
                         -- Add the current state as 'faulty', retain the found flag
                         S.modify (\s@(found, trace) -> if found then s else (False,(current,False):trace))
+                        trace ("no transition found, false") (return ())
                         return False
                     Just nextState -> do
                         -- Add the current state as valid on the verification path, retain the found flag

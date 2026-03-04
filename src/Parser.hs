@@ -22,14 +22,18 @@ data Regex
     | Or     Regex Regex
     deriving (Eq, Show)
 
-pp :: Regex -> String 
-pp Epsilon                = "ε"
-pp Dot                    = "."
-pp (Literal l)            = [l]
-pp (Kleene l@(Literal _)) = pp l ++ "*"
-pp (Kleene d@Dot)         = pp d ++ "*"
-pp (Kleene r)             = "(" ++ pp r ++ ")*"
-pp (Concat r1 r2)         = pp r1 ++ pp r2
+-- instance Show Regex where 
+--     show = pp
+
+pp :: Regex -> String
+pp Epsilon      = "ε"
+pp Dot          = "."
+pp (Literal c)  = [c]
+pp (Plus r)     = "(" ++ pp r ++ ")+"
+pp (Kleene r)   = "(" ++ pp r ++ ")*"
+pp (Optional r) = "(" ++ pp r ++ ")?"
+pp (Concat a b) = pp a ++ pp b
+pp (Or a b)     = "(" ++ pp a ++ "|" ++ pp b ++ ")"
 
 -- @parseReg@ only returns @Just reg@ if the sequence is parsed fully.
 -- This simplifies testing.

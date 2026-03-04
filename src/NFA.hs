@@ -35,8 +35,10 @@ eps :: Char
 eps = '\949'
 
 -- Construction of Epsilon-NFA
--- TODO: is this wrong?
 constructNFA :: Regex -> S.State Env (State, State)
+-- TODO: is this wrong?
+-- Clarification: Epsilon can not be composed, there can only be a singular Epsilon for which
+-- this is correct
 constructNFA Epsilon = do
     currentState <- getNextState
     nextState <- getNextState
@@ -54,6 +56,9 @@ constructNFA (Literal l) = do
     nextState <- getNextState
     createEdge currentState nextState l
     return (currentState, nextState)
+
+constructNFA (Plus r) = 
+    constructNFA (Concat r (Kleene r))
 
 constructNFA (Kleene exp) = do
     currentState <- getNextState
@@ -76,6 +81,16 @@ constructNFA (Kleene exp) = do
 
     return (currentState, localFinalState)
 
+constructNFA (Optional reg) = do 
+    currentState <- getNextState
+    (startReg, endReg) <- constructNFA reg
+    endingState <- getNextState
+
+    createEdge currentState startReg eps
+    createEdge endReg endingState eps
+    createEdge currentState endingState eps
+    return (currentState, endingState)
+
 constructNFA (Concat l r) = do
     (lStart, lEnd) <- constructNFA l
     (rStart, rEnd) <- constructNFA r
@@ -84,6 +99,22 @@ constructNFA (Concat l r) = do
     createEdge lEnd rStart eps
 
     return (lStart, rEnd)
+
+constructNFA (Or l r ) = do 
+    currentState <- getNextState
+    -- first regex
+    (lStart, lEnd) <- constructNFA l
+    -- second regex
+    (rStart, rEnd) <- constructNFA r
+    endingState <- getNextState
+
+    -- create epsilon-transitions that allow to choose either side
+    createEdge currentState lStart eps
+    createEdge currentState rStart eps
+    createEdge lEnd endingState eps
+    createEdge rEnd endingState eps
+
+    return (currentState, endingState)
 
 
 createEdge :: State -> State -> Char -> S.State Env ()

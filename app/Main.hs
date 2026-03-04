@@ -3,20 +3,21 @@
 module Main where
 
 import Datatypes
-import Parser (parseReg)
+import Parser (parseReg, Regex(..))
 import DMap   (toString)
 import DFA    (fromNFAMulti, flattenToDFA)
 import NFA    (epsilonClosure, fromRegex)
 
 import System.IO (hSetBuffering, stdout, BufferMode(NoBuffering))
+import Text.Regex.TDFA((=~))
 
 import qualified Regex
 
 main :: IO () -- TODO: use MaybeT IO ()
 main = do
     hSetBuffering stdout NoBuffering
-
     putStr ">> "
+
     p <- getLine
     case parseReg p of
         Just reg -> do 
