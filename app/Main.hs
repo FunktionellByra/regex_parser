@@ -16,8 +16,8 @@ main :: IO () -- TODO: use MaybeT IO ()
 main = do
     hSetBuffering stdout NoBuffering
 
-    let reg   = symbol 'S' +++ eps
-        input = "a1"
+    let reg   = url
+        input = "https://discord.com/channels/me/1435605061844860999"
 
     let nfa         = fromRegex reg
     let epsClosure  = epsilonClosure nfa

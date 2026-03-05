@@ -157,6 +157,8 @@ stringifyNFA (NFA start end ts) =
 
 formatChar :: Char -> String
 formatChar '.' = "\8226"
+formatChar ':' = "\":\""
+formatChar '/' = "\"/\""
 formatChar l   = [l]
 
 indent :: String -> String
